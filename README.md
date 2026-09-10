@@ -76,7 +76,7 @@ docker compose up -d           # Splunk at http://localhost:8000
 | Infra | Victim VM + 3 sensors + snapshots | **DONE** | - | - |
 | 05 | T1003.008 /etc/shadow access | **worked example** | partial | [ ] |
 | 01 | T1059.004 Unix shell | data loaded | [ ] | [ ] |
-| 02 | T1053.003 Cron persistence | data loaded | [ ] | [ ] |
+| 02 | T1053.003 Cron persistence | **worked (taught)** | [ ] | [ ] |
 | 03 | T1543.002 systemd persistence | data loaded | [ ] | [ ] |
 | 04 | T1548.001 setuid abuse | data loaded | [ ] | [ ] |
 | 06 | T1547.006 Kernel module load | data loaded | [ ] | [ ] |
