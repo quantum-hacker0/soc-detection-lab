@@ -31,8 +31,8 @@ index=soclab source="XmlWinEventLog:Microsoft-Windows-Sysmon/Operational" EventC
 ```
 
 ## Tuning log
-Every line here is a real interview answer. Record what fired on `baseline.evtx`
-and what you did about it - including anything you chose NOT to exclude and why.
+Record what fired on the baseline and what you did about it - including anything
+you chose NOT to exclude, and why.
 
 | Date | Benign source that fired | Decision | Rationale |
 |------|--------------------------|----------|-----------|
@@ -47,6 +47,6 @@ and what you did about it - including anything you chose NOT to exclude and why.
       the rule keys on target + access rights, not on source filename)
 
 ## Known limitations
-State these plainly. Every real detection has them, and saying so is a seniority signal.
+Every detection has them; worth writing down so the gaps are explicit.
 - Handle-only access with `PROCESS_QUERY_LIMITED_INFORMATION` is not covered by design.
 - A driver or PPL-bypass dumping LSASS from kernel produces no EID 10.

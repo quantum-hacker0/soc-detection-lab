@@ -19,21 +19,18 @@ Run in this order. Baseline FIRST, always.
 | 09 | T1021.004 | SSH lateral movement | auditd, Sysmon 3 (net) | ART T1021.004 |
 | 10 | T1105    | Ingress tool transfer (curl/wget payload) | Sysmon 1+3, Falco | ART T1105 |
 | 11 | T1611    | **Container escape** | Falco (signature use case) | see docs - needs docker in VM |
-| 12 | T1068    | **Local privesc via your own exploit** | auditd, Falco | your PoC - the differentiator |
+| 12 | T1068    | **Local privesc via your own exploit** | auditd, Falco | self-written PoC |
 
-## Windows coverage without a Windows VM
+## Windows coverage (optional, not yet done)
 
-Techniques 01-12 are Linux, generated here. For Windows/AD fluency (what bank & MSSP
-T1 queues are actually made of) ingest a PUBLIC attack corpus and write/tune rules
-against it - do not fake having generated it:
+Techniques 01-12 are Linux, generated locally. To practice Windows/AD detection without a
+Windows VM, ingest a public attack corpus and write rules against it - keeping it clearly
+separate from the self-generated Linux data:
 - EVTX-ATTACK-SAMPLES (sbousseaden) - labeled EVTX per ATT&CK technique
 - OTRF Security-Datasets (Mordor) - Windows + AD attack telemetry as JSON
 - Splunk BOTS v3 dataset
 
-Say exactly this in the write-up: "Linux telemetry I generated in an isolated lab;
-Windows telemetry from public corpora." That split is normal and reads as precision.
-
-## Discipline (unchanged, and it is the whole point)
+## How I keep the results honest
 
 1. **Baseline before any attack.** Roll VM to `provisioned-clean`, use it normally
    30+ min, export that as the baseline corpus. Every rule is tested against it.
