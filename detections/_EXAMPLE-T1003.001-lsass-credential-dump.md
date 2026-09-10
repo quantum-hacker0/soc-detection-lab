@@ -31,8 +31,8 @@ index=soclab source="XmlWinEventLog:Microsoft-Windows-Sysmon/Operational" EventC
 ```
 
 ## Tuning log
-Record what fired on the baseline and what you did about it - including anything
-you chose NOT to exclude, and why.
+What fired on the baseline and what was done about it - including anything left
+un-excluded, and why.
 
 | Date | Benign source that fired | Decision | Rationale |
 |------|--------------------------|----------|-----------|

@@ -28,7 +28,7 @@ index=soclab sourcetype=linux:sysmon
 | Date | Benign source that fired | Decision | Rationale |
 |------|--------------------------|----------|-----------|
 | build | `curl -s -o /dev/null http://...` (connectivity checks) | excluded by requiring a suspicious `-o` target | writing to /dev/null is not staging |
-| key insight | curl/wget alone fired in BOTH indexes | never alert on the tool; alert on the destination | admins download things all day |
+| build | curl/wget alone fired in both indexes | alert on the destination, not the tool | admins download things routinely |
 
 ## Validation
 - [x] Fires on: T1105 (`curl -o /tmp/.stage1`, `wget -O /tmp/.stage2`) - 2 rows
