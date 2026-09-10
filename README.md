@@ -8,6 +8,10 @@ checked against a recording of normal activity too, so I know it isn't just matc
 I built this because I wanted to actually understand what an attack looks like in logs,
 rather than reading about it. Writing the detection is what forced me to actually learn the telemetry.
 
+The Linux rules (`detections/`) are Splunk/SPL against telemetry I generated. The Windows
+rules (`detections-kql/`) are the same techniques in KQL for Microsoft Sentinel/Defender,
+tested against a public Windows attack corpus - so the same method is shown on both stacks.
+
 ## Setup
 
 Everything runs on one laptop (Ubuntu host, 8 GB RAM). The victim is a throwaway QEMU/KVM
@@ -56,7 +60,8 @@ New to SPL? `docs/writing-detections.md` walks through how I approach a rule fro
 | `cloud-init/` | Unattended provisioning (how the sensors get installed) |
 | `atomics/PLAN.md` | The techniques and how I run them |
 | `atomics/RUNLOG.md` | What I ran and when (UTC) |
-| `detections/` | One file per technique: hypothesis, SPL, tuning notes, limitations |
+| `detections/` | Linux techniques: hypothesis, SPL, tuning notes, limitations |
+| `detections-kql/` | Windows techniques in KQL (Sentinel/Defender), tested vs a public corpus |
 | `docs/` | SPL walkthrough, runbook template, setup notes for the container/exploit tests |
 | `ingest/` | collect / ingest / search helpers |
 | `evidence/` | Collected logs (gitignored) |

@@ -17,3 +17,6 @@ vm/qemu.pid
 
 # secrets
 .env
+
+# public Windows corpus (clone separately, not vendored)
+EVTX-ATTACK-SAMPLES/
