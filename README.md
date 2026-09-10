@@ -75,16 +75,16 @@ docker compose up -d           # Splunk at http://localhost:8000
 |---|-----------|------|-------|---------|
 | Infra | Victim VM + 3 sensors + snapshots | **DONE** | - | - |
 | 05 | T1003.008 /etc/shadow access | **worked example** | partial | [ ] |
-| 01 | T1059.004 Unix shell | data loaded | [ ] | [ ] |
+| 01 | T1059.004 Unix shell | **done** | [ ] | [ ] |
 | 02 | T1053.003 Cron persistence | **worked (taught)** | [ ] | [ ] |
-| 03 | T1543.002 systemd persistence | data loaded | [ ] | [ ] |
-| 04 | T1548.001 setuid abuse | data loaded | [ ] | [ ] |
-| 06 | T1547.006 Kernel module load | data loaded | [ ] | [ ] |
-| 07 | T1070.003 Clear history/logs | data loaded | [ ] | [ ] |
-| 08 | T1552.004 SSH key theft | data loaded | [ ] | [ ] |
-| 09 | T1021.004 SSH lateral | data loaded | [ ] | [ ] |
-| 10 | T1105 Ingress tool transfer | data loaded | [ ] | [ ] |
-| 11 | T1611 Container escape | data loaded | [ ] | [ ] |
+| 03 | T1543.002 systemd persistence | **done** | [ ] | [ ] |
+| 04 | T1548.001 setuid abuse | **done** | [ ] | [ ] |
+| 06 | T1547.006 Kernel module load | **done** | [ ] | [ ] |
+| 07 | T1070.003 Clear history/logs | **done** | [ ] | [ ] |
+| 08 | T1552.004 SSH key theft | **done** | [ ] | [ ] |
+| 09 | T1021.004 SSH lateral | **done** | [ ] | [ ] |
+| 10 | T1105 Ingress tool transfer | **done** | [ ] | [ ] |
+| 11 | T1611 Container escape | **done** | [ ] | [ ] |
 | 12 | T1068 Privesc (own exploit) | **worked example** | [ ] | [ ] |
 
 ## Limitations, stated up front
