@@ -9,7 +9,7 @@ The victim VM (`vm/`) runs three sensors. This directory moves their output into
 | `soclab_baseline` | 2 min benign admin activity | auditd 4027, sysmon 184, falco 0 |
 | `soclab` | 6 attack techniques | auditd 3831, sysmon 222, falco 12 |
 
-Splunk UI: http://localhost:8000  (admin / <redacted-see-env>)
+Splunk UI: http://localhost:8000  (admin / <from your .env>)
 
 ## Scripts
 

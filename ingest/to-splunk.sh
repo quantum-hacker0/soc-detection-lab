@@ -6,7 +6,7 @@
 set -e
 L="${1:?usage: to-splunk.sh <label> <index>}"; IDX="${2:?need target index}"
 cd "$(dirname "$0")/.."
-PW='<redacted-see-env>'
+[ -f "$(dirname "$0")/../.env" ] && . "$(dirname "$0")/../.env"; PW="${SPLUNK_PASSWORD:?set SPLUNK_PASSWORD in .env}"
 C="docker exec -u splunk soclab-splunk /opt/splunk/bin/splunk"
 D="/evidence/$L"   # evidence/ is bind-mounted read-only at /evidence in the container
 
