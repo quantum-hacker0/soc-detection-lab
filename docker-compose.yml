@@ -15,11 +15,15 @@ services:
       - "8088:8088"    # HTTP Event Collector
       - "9997:9997"    # forwarder receiving
     volumes:
-      - ./splunk-var:/opt/splunk/var
-      - ./splunk-etc:/opt/splunk/etc
-      - ./evidence:/evidence:ro     # EVTX exports land here for one-shot ingest
+      - splunk-var:/opt/splunk/var
+      - splunk-etc:/opt/splunk/etc
+      - ./evidence:/evidence:ro     # collected corpora, ingested via CLI oneshot
     deploy:
       resources:
         limits:
           memory: 2500m
     restart: unless-stopped
+
+volumes:
+  splunk-var:
+  splunk-etc:

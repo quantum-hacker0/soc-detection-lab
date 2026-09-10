@@ -1,46 +1,46 @@
-# Getting EVTX from the VM into Splunk
+# Telemetry pipeline - collect, ingest, search
 
-Phase 2 - the Windows VM is powered OFF at this point.
+The victim VM (`vm/`) runs three sensors. This directory moves their output into Splunk.
 
-## 1. Export on the Windows VM (before shutdown)
-```powershell
-$out = "C:\export"; mkdir $out -Force
-wevtutil epl "Microsoft-Windows-Sysmon/Operational" "$out\sysmon.evtx"
-wevtutil epl Security       "$out\security.evtx"
-wevtutil epl "Microsoft-Windows-PowerShell/Operational" "$out\powershell.evtx"
-```
-Copy them to `soc-detection-lab/evidence/` on the host (shared folder or scp).
+## Live state (already loaded)
 
-## 2. Ingest
-The compose file mounts `./evidence` read-only at `/evidence` inside the container.
-Splunk cannot parse raw .evtx directly - convert to XML first on the host:
+| Index | Corpus | Contents |
+|-------|--------|----------|
+| `soclab_baseline` | 2 min benign admin activity | auditd 4027, sysmon 184, falco 0 |
+| `soclab` | 6 attack techniques | auditd 3831, sysmon 222, falco 12 |
+
+Splunk UI: http://localhost:8000  (admin / <redacted-see-env>)
+
+## Scripts
 
 ```bash
-pip install --user evtx            # or: cargo install evtx
-evtx_dump -o xml evidence/sysmon.evtx > evidence/sysmon.xml
+../vm/start-vm.sh                     # boot the victim
+../vm/rollback.sh                     # reset victim to provisioned-clean (before each baseline)
+./collect.sh   <label>                # pull auditd+sysmon+falco -> evidence/<label>/
+./to-splunk.sh <label> <index>        # ingest a corpus:  to-splunk.sh baseline soclab_baseline
+./search.sh    '<SPL>'                # run a detection from the host
 ```
 
-Then one-shot it:
+## Full cycle for a new technique
+
 ```bash
-docker exec -it soclab-splunk /opt/splunk/bin/splunk add oneshot /evidence/sysmon.xml \
-  -index soclab -sourcetype "XmlWinEventLog:Microsoft-Windows-Sysmon/Operational" \
-  -auth admin:<redacted-see-env>
+../vm/rollback.sh                                     # clean slate
+../vm/ssh.sh 'sudo truncate -s0 /var/log/audit/audit.log /var/log/syslog; \
+              sudo truncate -s0 /var/log/falco_events.json'
+# ... run the atomic (see atomics/PLAN.md), noting UTC time in atomics/RUNLOG.md ...
+./collect.sh   T1053.003
+./to-splunk.sh T1053.003 soclab
+./search.sh 'index=soclab ... your detection ...'    # develop the rule
+./search.sh 'index=soclab_baseline ... same rule ...'# TUNE: must be quiet here
 ```
 
-Create the index first (once):
-```bash
-docker exec -it soclab-splunk /opt/splunk/bin/splunk add index soclab \
-  -auth admin:<redacted-see-env>
-```
+## Parsing
 
-## 3. Ingest the baseline into a SEPARATE index
-```bash
-docker exec -it soclab-splunk /opt/splunk/bin/splunk add index soclab_baseline -auth admin:...
-```
-Run every rule against `index=soclab_baseline` too. That is the tuning step, and it is
-the part that separates this project from every other lab repo on GitHub.
+`../splunk-config/props.conf` (installed in the container) line-breaks each sourcetype:
+falco:json one alert per line, linux:audit one record per line, linux:sysmon per `<Event>`.
+Re-installed automatically only if you rebuild; if you `docker compose down -v` (wipes
+volumes), re-copy it: `docker cp ../splunk-config/props.conf soclab-splunk:/opt/splunk/etc/system/local/`
 
-## Splunk Free limits worth knowing
-- 500 MB/day indexing. Plenty here; you are ingesting a bounded corpus, not a live feed.
-- No auth/roles, no scheduled alerting. Run detections as saved searches manually.
-  Note this limitation in your write-up rather than pretending it is a production SIEM.
+## Splunk Free limits (state these in the write-up)
+- 500 MB/day indexing - fine for bounded lab corpora.
+- No scheduled alerting or RBAC - detections run as manual saved searches.
