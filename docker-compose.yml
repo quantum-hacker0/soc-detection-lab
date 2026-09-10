@@ -1,0 +1,25 @@
+# Splunk Free - single instance, sized for a 7.5GB host.
+# Start:  docker compose up -d      Stop:  docker compose down
+# UI:     http://localhost:8000     user: admin / pass: from SPLUNK_PASSWORD below
+services:
+  splunk:
+    image: splunk/splunk:9.3
+    container_name: soclab-splunk
+    hostname: soclab-splunk
+    environment:
+      SPLUNK_START_ARGS: --accept-license
+      SPLUNK_PASSWORD: <redacted-see-env>
+      SPLUNK_LICENSE_URI: Free
+    ports:
+      - "8000:8000"    # web UI
+      - "8088:8088"    # HTTP Event Collector
+      - "9997:9997"    # forwarder receiving
+    volumes:
+      - ./splunk-var:/opt/splunk/var
+      - ./splunk-etc:/opt/splunk/etc
+      - ./evidence:/evidence:ro     # EVTX exports land here for one-shot ingest
+    deploy:
+      resources:
+        limits:
+          memory: 2500m
+    restart: unless-stopped

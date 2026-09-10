@@ -1,0 +1,80 @@
+#cloud-config
+hostname: soclab-victim
+manage_etc_hosts: true
+
+users:
+  - name: analyst
+    groups: [sudo, adm]
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    lock_passwd: false
+    ssh_authorized_keys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE61AJHucOx31C78dum/gByQUeBE3OTlhtf0eBxv5iW+ soclab-host
+
+package_update: true
+package_upgrade: false
+packages:
+  - auditd
+  - audispd-plugins
+  - curl
+  - wget
+  - git
+  - jq
+  - python3
+  - python3-pip
+  - unzip
+  - net-tools
+  - lsof
+  - gnupg
+
+write_files:
+  # Marker so the host can tell provisioning finished vs. still running.
+  - path: /etc/soclab-release
+    content: |
+      soclab victim node - Ubuntu 24.04 (noble)
+      Telemetry: auditd + Sysmon for Linux + Falco (modern_ebpf)
+      ISOLATED LAB HOST. Attack tooling is executed here deliberately.
+
+  - path: /opt/soclab/provision.sh
+    permissions: '0755'
+    content: |
+      #!/usr/bin/env bash
+      # Runs once at first boot. Logs to /var/log/soclab-provision.log
+      set -x
+      exec > >(tee -a /var/log/soclab-provision.log) 2>&1
+      echo "=== provision start $(date -u +%FT%TZ) ==="
+
+      # ---- 1. auditd ruleset (Florian Roth / Neo23x0 best-practice) ----
+      curl -fsSL -o /etc/audit/rules.d/soclab.rules         https://raw.githubusercontent.com/Neo23x0/auditd/master/audit.rules || echo "AUDITD_RULES_FAILED"
+      augenrules --load || auditctl -R /etc/audit/rules.d/soclab.rules
+      systemctl enable --now auditd
+      auditctl -l | wc -l
+
+      # ---- 2. Falco (eBPF, CO-RE - no kernel module build needed on 6.8) ----
+      curl -fsSL https://falco.org/repo/falcosecurity-packages.asc         | gpg --dearmor -o /usr/share/keyrings/falco-archive-keyring.gpg
+      echo "deb [signed-by=/usr/share/keyrings/falco-archive-keyring.gpg] https://download.falco.org/packages/deb stable main" > /etc/apt/sources.list.d/falcosecurity.list
+      apt-get update -y
+      FALCO_FRONTEND=noninteractive apt-get install -y --no-install-recommends falco         || echo "FALCO_FAILED"
+      # force JSON output to a file the host can collect
+      if [ -f /etc/falco/falco.yaml ]; then
+        sed -i 's/^json_output:.*/json_output: true/' /etc/falco/falco.yaml
+        sed -i 's/^  enabled: false/  enabled: true/' /etc/falco/falco.yaml
+        printf '\nfile_output:\n  enabled: true\n  keep_alive: false\n  filename: /var/log/falco_events.json\n' >> /etc/falco/falco.yaml
+      fi
+      systemctl enable --now falco-modern-bpf.service 2>/dev/null         || systemctl enable --now falco 2>/dev/null || echo "FALCO_SVC_FAILED"
+
+      # ---- 3. Sysmon for Linux ----
+      curl -fsSL -o /tmp/msprod.deb         https://packages.microsoft.com/config/ubuntu/24.04/packages-microsoft-prod.deb         && dpkg -i /tmp/msprod.deb && apt-get update -y         && apt-get install -y sysmonforlinux || echo "SYSMON_FAILED"
+
+      # ---- 4. Atomic Red Team (Linux atomics) ----
+      git clone --depth 1 https://github.com/redcanaryco/atomic-red-team.git         /opt/atomic-red-team || echo "ART_FAILED"
+
+      mkdir -p /opt/soclab/export
+      echo "=== provision done $(date -u +%FT%TZ) ==="
+      touch /opt/soclab/PROVISION_COMPLETE
+
+runcmd:
+  - [ bash, /opt/soclab/provision.sh ]
+
+power_state:
+  mode: noop

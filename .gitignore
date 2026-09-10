@@ -1,0 +1,16 @@
+evidence/*
+!evidence/.gitkeep
+splunk-var/
+splunk-etc/
+*.evtx
+*.xml
+
+# VM artifacts - large, machine-specific, rebuildable from cloud-init/
+vm/*.qcow2
+vm/*.img
+vm/seed.iso
+vm/*.log
+vm/qmp.sock
+vm/soclab_key
+vm/soclab_key.pub
+vm/qemu.pid
